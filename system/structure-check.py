@@ -32,10 +32,16 @@ EXCLUDE_DIR_NAMES = {
     ".git", "node_modules", "__pycache__", ".venv", "venv",
     ".next", "dist", "build", ".dashboard", "OpenMontage",
 }
+# A skill folder lives under one of these, depending on which agent runtime this
+# checkout serves: Claude Code reads .claude/skills/, Hermes reads .hermes/skills/.
+# Both are checked the same way, so one repo can serve either runtime.
+SKILL_ROOTS = (".claude/skills", ".hermes/skills")
+
 EXCLUDE_PREFIXES = (
-    ".claude/skills/",      # installed skill repos, re-fetched by install-skills.sh
+    ".claude/skills/",      # vendored skill packs, verified by install-skills.sh
                             # (their CONTENTS are third-party; the folders themselves
                             #  are still checked for loadability)
+    ".hermes/skills/",      # the same skills when this checkout serves Hermes
     ".claude/plugins/",
     "infra/bin/",           # downloaded tools
     "dashboard/node_modules/",
@@ -125,7 +131,7 @@ LEGAL_PRODUCT_DIRS = {
 }
 LEGAL_TOP_DIRS = {
     "clients", "system", "docs", "templates", "infra",
-    "inspiration-library", "dashboard", ".claude", "_archive",
+    "inspiration-library", "dashboard", ".claude", ".hermes", "_archive",
 }
 
 # Files whose whole job is to say WHAT IS TRUE NOW. If one grows past its cap it has
@@ -210,7 +216,7 @@ def walk_dirs():
         r = rel(dirpath)
         if r == ".":
             continue
-        if r == ".claude/skills":
+        if r in SKILL_ROOTS:
             # yield the skill folders themselves, but do not descend into their
             # third-party contents
             for d in sorted(dirnames):
@@ -469,14 +475,14 @@ def check_skills_loadable(dirs):
     out = []
     for ap, rp in dirs:
         parts = rp.split("/")
-        if len(parts) != 3 or parts[0] != ".claude" or parts[1] != "skills":
+        if len(parts) != 3 or parts[0] + "/" + parts[1] not in SKILL_ROOTS:
             continue
         if os.path.exists(os.path.join(ap, "SKILL.md")):
             continue
         if os.path.isdir(os.path.join(ap, "skills")):
             continue  # multi-skill repo, namespaced when used
-        out.append((rp, "no SKILL.md at its top level and no skills/ folder: Claude "
-                        "cannot load this. Install it via install-skills.sh, which "
+        out.append((rp, "no SKILL.md at its top level and no skills/ folder: the agent "
+                        "cannot load this. Check it with install-skills.sh, which also "
                         "lifts a nested SKILL.md."))
     return out
 
@@ -538,7 +544,7 @@ def check_doc_paths(files):
     for ap, rp in files:
         if not rp.endswith(".md") or is_history(rp) or rp in DOC_ALLOW:
             continue
-        if "/_alts/" in rp or rp.startswith(".claude/skills/"):
+        if "/_alts/" in rp or any(rp.startswith(r + "/") for r in SKILL_ROOTS):
             continue
         try:
             text = io.open(ap, encoding="utf-8", errors="replace").read()

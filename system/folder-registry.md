@@ -22,7 +22,8 @@
 | `dashboard/` | our own internal view of `clients/`. Dependency-free Node. Charter in `dashboard/README.md`. | client deliverables, and a second client registry: `system/active-clients.md` is the source of truth, this only holds colours and labels |
 | `.claude/` | agent definitions, installed skills, harness settings. Charter in `.claude/README.md`. | client work, and human documentation |
 | `.claude/agents/` | the 16 agent files. **Each must carry `model: sonnet`, a CONTRACT block, a pointer to `system/skill-router.md`, and the file system law.** | a re-typed skill list: point at the router instead |
-| `.claude/skills/` | installed skill packages. **`creative-director/`, `last30days/` and `x-article-publisher/` are COMMITTED** (a fresh clone should not depend on the installer lifting their nested SKILL.md); everything else here is fetched by `install-skills.sh` and gitignored. A skill is loadable only when `SKILL.md` sits at the TOP of its folder (or it is a multi-skill repo with `skills/`). | a hand-cloned repo: add it to `install-skills.sh`, which lifts nested skills and verifies loadability |
+| `.claude/skills/` | installed skill packages, **all COMMITTED since 2026-09-06** so a fresh clone is self-sufficient (the four that used to be fetched were excluded on the promise of a 0-byte installer, which left every clone without `humanizer`). A skill is loadable only when `SKILL.md` sits at the TOP of its folder (or it is a multi-skill repo with `skills/`). | a hand-cloned repo: add it through `install-skills.sh`, which lifts nested skills and verifies loadability |
+| `.hermes/skills/` | the SAME skills, at the path the Hermes runtime reads (project-local skills in a git repo). Present only in a checkout built with `python system/export-clean.py --runtime hermes`; never alongside `.claude/skills/` in the same checkout. | a second copy of anything: one checkout serves one runtime |
 
 ## INSIDE A CLIENT
 

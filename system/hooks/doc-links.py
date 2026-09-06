@@ -14,7 +14,11 @@ stdout. ALWAYS exits 0 and never raises: a hook must never block real work.
 """
 import sys, os, re, json, fnmatch, datetime
 
-REPO = "C:/Users/kjn/Desktop/AI Agency"
+# Derived from this script's own location (system/hooks/ -> repo root), with the harness
+# variable as an override. It was hardcoded to one absolute Desktop path until 2026-09-06,
+# which meant a second machine, or this repo moved anywhere else, silently checked nothing.
+REPO = os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MAP = os.path.join(REPO, "system", "doc-dependencies.md")
 
 
@@ -82,6 +86,11 @@ def _path_from_command(cmd):
 
 
 def main():
+    # Manual mode: `python system/hooks/doc-links.py <edited-file>`. Runtimes without hooks
+    # (Hermes, for one) cannot fire this automatically, so it has to be callable by hand.
+    if len(sys.argv) > 1:
+        report(sys.argv[1])
+        return
     raw = sys.stdin.read()
     if not raw.strip():
         return
@@ -106,7 +115,12 @@ def main():
         fp = _path_from_command(cmd)
     if not fp:
         return
+    report(fp, as_hook=True)
 
+
+def report(fp, as_hook=False):
+    """Print the dependents of one edited file. As a hook it answers in the JSON the harness
+    expects; called by hand it prints plain text."""
     rel = relpath(fp)
     if not rel or not os.path.exists(MAP):
         return
@@ -148,6 +162,10 @@ def main():
         "That regenerates every copy from the one value. Run bare 'python system/sync.py' to check for",
         "drift and for dead path references before you commit.",
     ]
+
+    if not as_hook:
+        sys.stdout.write("\n".join(lines) + "\n")
+        return
 
     out = {"hookSpecificOutput": {
         "hookEventName": "PostToolUse",

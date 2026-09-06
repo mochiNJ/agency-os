@@ -48,7 +48,7 @@ FROZEN = ("changelog.md", "progress.md", "qc-log.md", "creative-decisions-log.md
 # time and are never rewritten, so a stale path inside them is correct, not rot.
 # "_archive/" and "_drafts/" are gone (LAW 4 abolished them); "_alts/" replaced them.
 FROZEN_DIRS = ("_alts/", "system/jobs/", "/prompts/", "/qc-notes/",
-               ".git/", ".claude/skills/", "OpenMontage/")
+               ".git/", ".claude/skills/", ".hermes/skills/", "OpenMontage/")
 
 
 def load():

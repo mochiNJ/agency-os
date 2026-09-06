@@ -23,7 +23,11 @@
 
 set -u
 cd "$(dirname "$0")" || exit 1
+
+# Claude Code reads .claude/skills/, Hermes reads .hermes/skills/. One repo can serve
+# either runtime, so use whichever exists in this checkout.
 SKILLS=".claude/skills"
+[ -d ".hermes/skills" ] && SKILLS=".hermes/skills"
 FETCH="${1:-}"
 
 # name|upstream|subpath-holding-SKILL.md (empty = repo root). Only CONFIRMED upstreams belong

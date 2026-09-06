@@ -38,6 +38,8 @@ Read `CLAUDE.md` first for the rules; this file is the map.
 ## 📁 Top-level layout
 | Path | What it is |
 |---|---|
+| `AGENTS.md` | **Hermes reads this and `CLAUDE.md` into every agent and subagent prompt.** The enforcement checklist (nothing fires automatically here) and how the 16 agents are run with `delegate_task`. Setup: `docs/hermes-setup.md`. |
+| `.hermes/skills/` | Every skill, at the path Hermes loads them from. Verify with `bash install-skills.sh`. |
 | `CLAUDE.md` | The operating manual: quality mandates, dispatcher protocol, enforcement rules. |
 | `PROJECT-MAP.md` | This file. The index. |
 | `.claude/` | `agents/` (16 agent prompts) · `skills/` (vendored, committed) · `settings.json` (the enforcement hooks). |
