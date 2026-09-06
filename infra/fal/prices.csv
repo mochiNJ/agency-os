@@ -1,0 +1,11 @@
+model,est_usd,notes
+fal-ai/flux/schnell,0.003,"throwaway drafts only; per 512-1024px image (est)"
+fal-ai/flux/dev,0.025,"per image (est)"
+fal-ai/flux-pro/v1.1,0.05,"per image (est)"
+fal-ai/nano-banana-pro,0.13,"VERIFY slug+price on fal.ai/models; resolution-dependent (~0.039-0.24)"
+fal-ai/nano-banana-pro/edit,0.13,"reference/edit endpoint (image_urls); same price band as base nano-banana-pro; VERIFY on fal invoice"
+fal-ai/gpt-image-1,0.10,"VERIFY slug+price on fal.ai/models (~0.005-0.21)"
+fal-ai/gpt-image-1/text-to-image,0.13,"1024x1536 portrait, default quality (est ~0.06-0.21 by quality tier); VERIFY on fal invoice"
+fal-ai/veo3,0.60,"video; per ~5s clip (est) — VERIFY"
+fal-ai/kling-video/v2/master/text-to-video,0.35,"video; per 5s (est) — VERIFY"
+fal-ai/wan/v2.2-a14b/text-to-video,0.25,"video; per 5s (est) — VERIFY"

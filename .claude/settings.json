@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "generate_image|generate_video|generate-design|z_image_turbo_generate|^Agent$|^Task$",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "timeout": 10,
+            "statusMessage": "Enforcing brand + tool rules",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"the agency / ALL-CLIENT ENFORCEMENT (read before generating or spawning a producing agent): (1) PALETTE and FONTS come from clients/[client]/brand-profile.md, never from the brief or memory; if they conflict, the FILE wins and you STOP to flag it. (2) Canva means the Canva MCP (it exports real SVG); it is the DEFAULT for logos, wordmarks, vector and text assets, never just nice fonts. (3) CONCEPT FIRST, then user sign-off, then build; no logo or identity generation before an approved concept (Rule 7). (4) NEVER silently downgrade a tool: if the required tool is down or at 0 credits, STOP and tell the user first. (5) Save the full final prompt verbatim to clients/[client]/prompts/. (6) TOKEN DISCIPLINE: read ONLY what your task needs (targeted reads, not whole files); do not re-read a fact already in your brief; one efficient pass; concise report. Producing/QC agents run on Sonnet by default; the dispatcher runs ONE agent at a time (never producing agents in parallel) and hands tight self-contained briefs. See system/token-discipline.md + system/model-policy.md. (7) FILE SYSTEM LAW (system/file-system-law.md): the FOLDER is the status, never the filename (no FINAL/OLD/v2); MOVE, never copy; wrong is DELETED, different goes to _alts/; only _inbox/ and _alts/ exist; NEVER delete a video (*.mp4 is gitignored, so it is the only copy). Finished work goes to library/posts/YYYY-MM-DD-slug/. (8) SKILLS: load your MANDATORY skill from system/skill-router.md BEFORE the first draft. (9) INSPIRATION: read inspiration-library/recipes/README.md + by-business-type/[type].md; there is NO per-client board. See CLAUDE.md ENFORCEMENT UPGRADES and system/prompt-writing-rules.md.\"}}'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "timeout": 10,
+            "statusMessage": "Checking linked documents",
+            "command": "python \"$CLAUDE_PROJECT_DIR/system/hooks/doc-links.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

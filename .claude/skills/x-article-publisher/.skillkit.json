@@ -1,0 +1,10 @@
+{
+  "name": "x-article-publisher",
+  "description": "",
+  "source": "wshuyi/x-article-publisher-skill",
+  "sourceType": "github",
+  "subpath": "x-article-publisher",
+  "installedAt": "2026-05-25T18:02:01.434Z",
+  "enabled": true,
+  "checksum": "4a07e340ebda089f"
+}

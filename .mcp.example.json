@@ -1,0 +1,27 @@
+{
+  "_README": [
+    "COPY THIS FILE TO .mcp.json AND FILL IN YOUR OWN KEYS.",
+    ".mcp.json is gitignored on purpose: it holds live credentials.",
+    "Never paste a key into a chat, a commit, or an issue. Enter it here, locally, by hand.",
+    "Setup notes per server: docs/mcp-setup.md"
+  ],
+  "mcpServers": {
+    "mcp-image": {
+      "command": "npx",
+      "args": ["-y", "mcp-image"],
+      "env": { "GEMINI_API_KEY": "", "IMAGE_OUTPUT_DIR": "./clients" }
+    },
+    "postiz": {
+      "command": "npx",
+      "args": ["-y", "postiz-mcp"],
+      "env": {
+        "POSTIZ_URL": "http://localhost:5000",
+        "POSTIZ_API_KEY": "",
+        "POSTIZ_ENABLE_WRITE": "true",
+        "POSTIZ_UPLOAD_ROOTS": "<absolute path to this repo>"
+      }
+    },
+    "canva": { "type": "streamable-http", "url": "https://mcp.canva.com/mcp" },
+    "meta-ads": { "type": "streamable-http", "url": "https://mcp.facebook.com/ads" }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_README": [
+    "THE SINGLE MACHINE-READABLE HOME FOR FACTS THAT MANY DOCUMENTS REPEAT.",
+    "Change a value HERE, then run:  python system/sync.py --write",
+    "Every AUTO block in every document is regenerated from this file. Never hand-edit those blocks.",
+    "An AUTO block looks like:   <!-- AUTO:palette START -->  ...generated...  <!-- AUTO:palette END -->",
+    "",
+    "WHAT BELONGS HERE: a fact that is (a) current, and (b) repeated in more than one live document.",
+    "WHAT DOES NOT: history (changelog, progress, qc-log, job tickets are append-only records of what",
+    "was true THEN), and anything with exactly one home already (that home stays the source of truth",
+    "and other docs POINT to it).",
+    "",
+    "THIS FILE IS EMPTY BECAUSE THIS IS A FRESH INSTALL. Add your first client's repeated facts when",
+    "you onboard it. NOTE: the block builders in system/sync.py (palette, demo roster, summary) were",
+    "written for the originating agency's own brand and are keyed to a client id. Adapt them to your",
+    "own keys before you place your first AUTO block, or sync.py will not find what it expects."
+  ],
+  "_link_check_allowlist": {
+    "_why": [
+      "Paths referenced ON PURPOSE even though they do not exist. sync.py skips these.",
+      "Keep this list SHORT and justified: a long allowlist means the checker has been talked",
+      "out of doing its job."
+    ],
+    "system/jobs": "The job-ticket folder. The law forbids placeholder-only folders, so it is created by the first ticket, not shipped empty.",
+    "infra/fal/.env": "The generation API key. Created by hand on each machine, never committed.",
+    "infra/postiz/.env": "Publishing credentials. Created by hand on each machine, never committed.",
+    ".mcp.json": "MCP servers and their keys. Copy .mcp.example.json to it and fill in locally."
+  }
+}

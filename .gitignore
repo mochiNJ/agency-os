@@ -1,0 +1,50 @@
+# Environment and secrets
+.env
+.env.local
+*.env
+.mcp.json
+
+# Python cache
+__pycache__/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large media files (tracked separately if needed)
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Claude Code internal
+.claude/settings.local.json
+
+# Skills are VENDORED (committed), so a clone is self-sufficient and nothing depends on a
+# third-party repo still being alive. Until 2026-09-06 four skills were excluded here on the
+# promise that install-skills.sh reinstalled them, and that file was 0 bytes: a fresh clone had
+# no humanizer (agent 07's MANDATORY skill) and no marketingskills pack. Do not re-add them.
+
+# Remotion render output (large, regenerated)
+clients/*/video-project/out/
+
+# Downloaded tools (re-fetchable, not source)
+infra/bin/
+
+# OpenMontage — large third-party video system (re-clonable from github.com/calesthio/OpenMontage).
+# Ignored during evaluation; integration decision (how/whether to vendor it) is a separate task.
+OpenMontage/
+
+# Dashboard runtime files
+dashboard/server.log
+clients/*/.dashboard/

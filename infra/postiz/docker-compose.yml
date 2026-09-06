@@ -1,0 +1,110 @@
+# Postiz — self-hosted (free forever) social publisher for the AI Marketing Agency.
+# Secrets (JWT_SECRET, POSTGRES_PASSWORD, Instagram app keys) live in the sibling .env file,
+# which is gitignored. Start with:  docker compose up -d   (run from this folder)
+# Postiz UI will be at:  http://localhost:5000
+services:
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:latest
+    container_name: postiz
+    restart: always
+    environment:
+      # Public address via Cloudflare Tunnel (postiz.example.com -> localhost:5000).
+      # This makes uploaded media (/uploads/...) publicly fetchable so Instagram/Meta
+      # can pull the video. BACKEND_INTERNAL_URL stays localhost (in-container only).
+      MAIN_URL: "https://postiz.example.com"
+      FRONTEND_URL: "https://postiz.example.com"
+      NEXT_PUBLIC_BACKEND_URL: "https://postiz.example.com/api"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATABASE_URL: "postgresql://postiz-user:${POSTGRES_PASSWORD}@postiz-postgres:5432/postiz-db-local"
+      REDIS_URL: "redis://postiz-redis:6379"
+      BACKEND_INTERNAL_URL: "http://localhost:3000"
+      # Postiz v2.12+ requires a Temporal workflow server; without it the backend
+      # exits at boot ("Backend failed to start on port 3000" / ECONNREFUSED :7233)
+      # and nginx returns 502 on every API call.
+      TEMPORAL_ADDRESS: "temporal:7233"
+      IS_GENERAL: "true"
+      DISABLE_REGISTRATION: "false"
+      STORAGE_PROVIDER: "local"
+      UPLOAD_DIRECTORY: "/uploads"
+      NEXT_PUBLIC_UPLOAD_DIRECTORY: "/uploads"
+      # --- Instagram connection (filled in during the Meta developer-app step) ---
+      INSTAGRAM_APP_ID: "${INSTAGRAM_APP_ID}"
+      INSTAGRAM_APP_SECRET: "${INSTAGRAM_APP_SECRET}"
+      # --- Facebook Page connection (same Meta app "a client Publishing") ---
+      FACEBOOK_APP_ID: "${FACEBOOK_APP_ID}"
+      FACEBOOK_APP_SECRET: "${FACEBOOK_APP_SECRET}"
+    ports:
+      - 5000:5000
+    volumes:
+      - postiz-config:/config/
+      - postiz-uploads:/uploads/
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+      postiz-redis:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+
+  # Temporal workflow engine — required by Postiz v2.12+.
+  # The upstream compose pairs Temporal with its own Postgres AND Elasticsearch.
+  # We deliberately run the LIGHT configuration instead: Temporal supports SQL
+  # visibility, so ENABLE_ES is left off and Temporal reuses the Postgres instance
+  # above (auto-setup creates its own `temporal` / `temporal_visibility` databases).
+  # This keeps the stack at 4 containers rather than 9 — the host has only 7.8 GB RAM
+  # and Elasticsearch alone would want 1-2 GB of it.
+  temporal:
+    image: temporalio/auto-setup:1.28.1
+    container_name: temporal
+    restart: always
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: "postiz-user"
+      POSTGRES_PWD: "${POSTGRES_PASSWORD}"
+      POSTGRES_SEEDS: postiz-postgres
+      TEMPORAL_NAMESPACE: default
+      # Temporal's SQL visibility schema allows only 3 Text search attributes.
+      # auto-setup otherwise creates two sample ones (CustomTextField,
+      # CustomStringField) that Postiz does not use, leaving too few slots and
+      # crashing the Postiz backend with:
+      #   "cannot have more than 3 search attribute of type Text"
+      # Skipping the samples leaves all 3 slots for Postiz.
+      SKIP_ADD_CUSTOM_SEARCH_ATTRIBUTES: "true"
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+
+  postiz-postgres:
+    image: postgres:17-alpine
+    container_name: postiz-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_USER: "postiz-user"
+      POSTGRES_DB: "postiz-db-local"
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U postiz-user -d postiz-db-local
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  postiz-redis:
+    image: redis:7.2
+    container_name: postiz-redis
+    restart: always
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - postiz-redis-data:/data
+
+volumes:
+  postgres-volume:
+  postiz-redis-data:
+  postiz-config:
+  postiz-uploads:

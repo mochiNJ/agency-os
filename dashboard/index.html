@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agency — Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Real drag-and-drop calendar engine -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<!-- Markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<style>
+:root{
+  /* Editorial studio — warm ink + ivory, dark-first */
+  --ink:#100f0d; --ink2:#17150f; --panel:#1c1a14; --panel2:#232019; --raise:#2a261d;
+  --line:#332f24; --line2:#413c2e;
+  --paper:#f3ede0; --paper-dim:#cfc7b6; --muted:#948c78; --faint:#6b6555;
+  --gold:#e0a24a; --gold-soft:#f0c27b; --coral:#ff6a45; --sage:#7fb59a;
+  --acc:var(--gold);
+  --radius:14px; --radius-lg:20px;
+  --shadow:0 20px 50px -20px rgba(0,0,0,.7);
+  --shadow-sm:0 8px 24px -14px rgba(0,0,0,.6);
+  --disp:'Fraunces',Georgia,serif; --ui:'Hanken Grotesk',system-ui,sans-serif;
+  --read:'Newsreader',Georgia,serif; --mono:'JetBrains Mono',monospace;
+}
+:root[data-theme="light"]{
+  --ink:#f3ede0; --ink2:#efe8d8; --panel:#fbf7ee; --panel2:#f5efe2; --raise:#fffdf7;
+  --line:#e3dac6; --line2:#d8cdb4;
+  --paper:#221f18; --paper-dim:#4a4436; --muted:#7a725f; --faint:#948c78;
+  --shadow:0 20px 50px -24px rgba(90,70,30,.28); --shadow-sm:0 8px 24px -16px rgba(90,70,30,.22);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ink:#f3ede0; --ink2:#efe8d8; --panel:#fbf7ee; --panel2:#f5efe2; --raise:#fffdf7;
+    --line:#e3dac6; --line2:#d8cdb4;
+    --paper:#221f18; --paper-dim:#4a4436; --muted:#7a725f; --faint:#948c78;
+    --shadow:0 20px 50px -24px rgba(90,70,30,.28); --shadow-sm:0 8px 24px -16px rgba(90,70,30,.22);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--ui); background:var(--ink); color:var(--paper);
+  line-height:1.55; -webkit-font-smoothing:antialiased; letter-spacing:.005em;
+  background-image:
+    radial-gradient(900px 500px at 88% -8%, rgba(224,162,74,.10), transparent 60%),
+    radial-gradient(700px 500px at 5% 100%, rgba(255,106,69,.06), transparent 55%);
+  background-attachment:fixed;
+}
+/* faint grain */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(224,162,74,.28)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:20px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+
+/* ---------- Layout ---------- */
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+.side{width:260px;flex:0 0 260px;padding:26px 18px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  border-right:1px solid var(--line);background:linear-gradient(180deg,var(--ink2),transparent 40%)}
+.brand{display:flex;align-items:center;gap:12px;padding:2px 8px 22px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.brand .mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-family:var(--disp);
+  font-weight:600;color:var(--ink);font-size:19px;background:linear-gradient(140deg,var(--gold-soft),var(--gold));
+  box-shadow:0 6px 18px -6px rgba(224,162,74,.6)}
+.brand b{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:.01em;line-height:1.1}
+.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.navlabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--faint);margin:22px 12px 8px;font-weight:700}
+.nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;color:var(--muted);
+  font-size:14px;font-weight:500;cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1);position:relative}
+.nav a .ic{width:20px;text-align:center;font-size:15px;opacity:.85}
+.nav a:hover{background:var(--panel);color:var(--paper)}
+.nav a:hover .ic{transform:translateX(1px)}
+.nav a.active{background:var(--panel2);color:var(--paper)}
+.nav a.active::before{content:"";position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:3px;height:20px;
+  background:var(--gold);border-radius:0 3px 3px 0}
+.nav a.soon{opacity:.5;cursor:default}
+.nav a.soon:hover{background:transparent;color:var(--muted)}
+.tag-soon{font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:var(--raise);border:1px solid var(--line2);
+  padding:2px 6px;border-radius:6px;margin-left:auto;color:var(--faint);font-weight:700}
+.themebtn{margin-top:24px;display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:11px;cursor:pointer;
+  color:var(--muted);font-size:13px;border:1px solid var(--line);transition:.18s}
+.themebtn:hover{background:var(--panel);color:var(--paper)}
+
+.main{flex:1;min-width:0;padding:40px 52px 90px;max-width:1240px}
+@media(max-width:900px){ .side{display:none} .main{padding:26px 20px 70px} }
+
+/* ---------- Headings / topbar ---------- */
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+h1.big{font-family:var(--disp);font-weight:600;font-size:clamp(30px,4vw,44px);letter-spacing:-.02em;line-height:1.02;margin:0}
+.lead{color:var(--muted);font-size:15px;margin-top:10px;max-width:560px}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:34px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;
+  background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px rgba(127,181,154,.16)}
+
+/* ---------- Client grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+.ccard{background:linear-gradient(165deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius-lg);
+  padding:26px;cursor:pointer;position:relative;overflow:hidden;transition:transform .28s cubic-bezier(.2,.7,.2,1),border-color .28s,box-shadow .28s;
+  opacity:0;transform:translateY(16px);animation:rise .6s forwards}
+.ccard:hover{transform:translateY(-5px);border-color:var(--line2);box-shadow:var(--shadow)}
+.ccard::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 90% 0%,var(--glow,rgba(224,162,74,.12)),transparent 70%);opacity:0;transition:.4s;pointer-events:none}
+.ccard:hover::after{opacity:1}
+.ccard .accent{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc)}
+.ccard .head{display:flex;align-items:center;gap:15px;margin-bottom:18px}
+.clogo{width:56px;height:56px;border-radius:15px;object-fit:cover;flex:0 0 56px;display:grid;place-items:center;
+  font-family:var(--disp);font-weight:600;font-size:23px;color:#fff;box-shadow:var(--shadow-sm);border:1px solid rgba(255,255,255,.08)}
+.ccard h3{margin:0;font-family:var(--disp);font-size:20px;font-weight:600;letter-spacing:-.01em}
+.ccard .type{color:var(--muted);font-size:12.5px;margin-top:2px}
+.ccard .goal{color:var(--paper-dim);font-size:14px;margin:2px 0 20px;min-height:44px;line-height:1.5}
+.ccard .foot{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted);padding-top:16px;border-top:1px solid var(--line)}
+.ccard .foot .sep{width:3px;height:3px;border-radius:50%;background:var(--faint)}
+.badge{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.badge.active{background:rgba(127,181,154,.16);color:var(--sage)}
+.badge.test{background:rgba(224,162,74,.16);color:var(--gold-soft)}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* ---------- Detail ---------- */
+.backlink{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:22px;
+  font-weight:600;transition:.18s;letter-spacing:.02em}
+.backlink:hover{color:var(--paper);gap:11px}
+.dhead{display:flex;align-items:center;gap:20px;margin-bottom:14px}
+.dhead .clogo{width:70px;height:70px;border-radius:18px;font-size:28px}
+.dhead h1{font-family:var(--disp);font-weight:600;font-size:34px;letter-spacing:-.02em;margin:0}
+.dhead .sub{color:var(--muted);font-size:14px;margin-top:3px}
+.goalbar{color:var(--paper-dim);font-size:15px;max-width:620px;margin:4px 0 26px;padding-left:14px;border-left:2px solid var(--acc)}
+
+.statrow{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
+.astat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 20px;min-width:118px;flex:1;
+  transition:.2s;position:relative;overflow:hidden}
+.astat:hover{border-color:var(--line2);transform:translateY(-2px)}
+.astat b{font-family:var(--disp);font-size:26px;font-weight:600;display:block;line-height:1}
+.astat small{color:var(--muted);font-size:12px;letter-spacing:.03em}
+.astat.click{cursor:pointer}
+.astat.click:hover{background:var(--panel2)}
+
+.section{margin-bottom:36px}
+.grouplabel{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--faint);font-weight:700;margin-bottom:14px;
+  display:flex;align-items:center;gap:10px}
+.grouplabel::after{content:"";flex:1;height:1px;background:var(--line)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 19px;cursor:pointer;
+  transition:all .22s cubic-bezier(.2,.7,.2,1);display:flex;align-items:center;gap:15px;position:relative;overflow:hidden}
+.tile:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:var(--shadow-sm)}
+.tile:hover .ic{color:var(--gold)}
+.tile .ic{font-size:20px;color:var(--muted);transition:.22s;width:24px;text-align:center}
+.tile b{font-family:var(--disp);font-size:15.5px;font-weight:600;display:block;letter-spacing:-.005em}
+.tile small{color:var(--muted);font-size:11.5px}
+.tile .arr{margin-left:auto;color:var(--faint);transition:.22s;opacity:0}
+.tile:hover .arr{opacity:1;transform:translateX(2px)}
+
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.gallery img,.gallery video{width:100%;height:140px;object-fit:cover;border-radius:12px;border:1px solid var(--line);
+  background:#000;cursor:pointer;transition:.25s}
+.gallery img:hover{transform:scale(1.03);border-color:var(--gold);box-shadow:var(--shadow-sm)}
+.empty{color:var(--muted);font-size:14px;padding:30px;text-align:center;border:1px dashed var(--line2);border-radius:14px;background:var(--panel)}
+.loading{color:var(--muted);padding:60px;text-align:center;font-family:var(--disp);font-style:italic;font-size:18px}
+
+/* ---------- Reader (document as an editorial report) ---------- */
+.overlay{position:fixed;inset:0;background:rgba(8,7,5,.72);backdrop-filter:blur(6px);z-index:60;display:none;
+  padding:40px 20px;overflow-y:auto}
+.overlay.show{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.reader{max-width:820px;margin:0 auto;background:var(--panel);border:1px solid var(--line2);border-radius:20px;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.8);overflow:hidden;animation:pop .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+.rtop{position:sticky;top:0;background:var(--panel2);border-bottom:1px solid var(--line);padding:16px 30px;z-index:3;
+  display:flex;align-items:center;justify-content:space-between;gap:16px}
+.rtop .rk{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.rtop b{font-family:var(--disp);font-size:16px;font-weight:600;display:block;margin-top:2px}
+.close{cursor:pointer;color:var(--muted);width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  font-size:18px;transition:.18s;border:1px solid transparent}
+.close:hover{background:var(--raise);color:var(--paper);border-color:var(--line2)}
+.doc{padding:40px 54px 60px;font-family:var(--read);font-size:17.5px;line-height:1.72;color:var(--paper)}
+@media(max-width:640px){.doc{padding:28px 24px 44px;font-size:16px}}
+.doc>*:first-child{margin-top:0}
+.doc h1{font-family:var(--disp);font-weight:600;font-size:32px;line-height:1.1;letter-spacing:-.02em;margin:0 0 .5em;
+  padding-bottom:.35em;border-bottom:2px solid var(--line2)}
+.doc h2{font-family:var(--disp);font-weight:600;font-size:24px;letter-spacing:-.01em;margin:1.7em 0 .5em;color:var(--paper)}
+.doc h3{font-family:var(--disp);font-weight:600;font-size:19px;margin:1.5em 0 .4em;color:var(--gold-soft)}
+.doc p{margin:.9em 0}
+.doc>p:first-of-type::first-letter{font-family:var(--disp);font-size:3.2em;line-height:.82;float:left;margin:.06em .12em 0 0;
+  color:var(--gold);font-weight:600}
+.doc strong{color:var(--paper);font-weight:600;font-family:var(--ui)}
+.doc em{color:var(--gold-soft)}
+.doc a{color:var(--gold);text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.doc code{font-family:var(--mono);background:var(--raise);padding:.12em .42em;border-radius:6px;font-size:.82em;color:var(--gold-soft)}
+.doc pre{background:var(--ink2);padding:18px;border-radius:12px;overflow-x:auto;border:1px solid var(--line);font-size:14px}
+.doc pre code{background:none;padding:0;color:var(--paper-dim)}
+.doc blockquote{margin:1.2em 0;padding:.6em 1.2em;border-left:3px solid var(--gold);background:var(--panel2);border-radius:0 10px 10px 0;color:var(--paper-dim);font-style:italic}
+.doc ul,.doc ol{padding-left:1.3em}.doc li{margin:.35em 0}
+.doc li::marker{color:var(--gold)}
+.doc hr{border:none;height:1px;background:var(--line2);margin:2.2em 0}
+.doc table{border-collapse:collapse;width:100%;font-family:var(--ui);font-size:13.5px;margin:1.4em 0;display:block;overflow-x:auto;
+  border:1px solid var(--line2);border-radius:10px}
+.doc th,.doc td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+.doc thead th{background:var(--panel2);color:var(--gold-soft);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0}
+.doc tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+.doc img{max-width:100%;border-radius:10px;border:1px solid var(--line)}
+
+/* ---------- Calendar ---------- */
+.calwrap{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px 26px;box-shadow:var(--shadow-sm)}
+.callegend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:18px;font-size:12.5px;color:var(--muted)}
+.lg{display:inline-flex;align-items:center;gap:7px}
+.lg i{width:11px;height:11px;border-radius:4px;display:inline-block}
+.hint{margin-left:auto;font-size:12px;color:var(--faint);display:inline-flex;align-items:center;gap:7px}
+#cal{--fc-border-color:var(--line);--fc-page-bg-color:transparent;--fc-neutral-bg-color:var(--panel2);
+  --fc-today-bg-color:rgba(224,162,74,.07);--fc-event-border-color:transparent}
+.fc{font-family:var(--ui)}
+.fc .fc-toolbar-title{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;color:var(--paper)}
+.fc .fc-button{background:var(--panel2)!important;border:1px solid var(--line)!important;color:var(--paper-dim)!important;
+  font-weight:600!important;font-size:13px!important;text-transform:capitalize!important;box-shadow:none!important;padding:6px 13px!important;transition:.18s}
+.fc .fc-button:hover{background:var(--raise)!important;color:var(--paper)!important}
+.fc .fc-button-primary:not(:disabled).fc-button-active{background:var(--gold)!important;border-color:var(--gold)!important;color:var(--ink)!important}
+.fc .fc-col-header-cell-cushion{color:var(--muted);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:10px 4px}
+.fc .fc-daygrid-day-number{color:var(--paper-dim);font-weight:600;font-size:13px;padding:8px 10px;font-family:var(--mono)}
+.fc .fc-day-other .fc-daygrid-day-number{color:var(--faint);opacity:.5}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--gold)}
+.fc-daygrid-day-frame{transition:background .2s}
+.fc-daygrid-day:hover{background:rgba(255,255,255,.02)}
+.fc-event{border:none!important;border-radius:8px!important;padding:0!important;margin:2px 3px!important;cursor:grab;
+  box-shadow:0 2px 6px -3px rgba(0,0,0,.5);transition:transform .12s,box-shadow .12s}
+.fc-event:hover{transform:translateY(-1px);box-shadow:0 6px 14px -6px rgba(0,0,0,.6)}
+.fc-event:active{cursor:grabbing}
+.ev{display:flex;align-items:center;gap:6px;padding:4px 8px;overflow:hidden}
+.ev .pf{width:6px;height:6px;border-radius:50%;flex:0 0 6px;background:#fff}
+.ev .pl{font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.95;color:#fff;flex:0 0 auto}
+.ev .tt{font-size:11px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.92}
+.ev .moved{margin-left:auto;font-size:9px;opacity:.8}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--raise);
+  border:1px solid var(--line2);color:var(--paper);padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:500;
+  box-shadow:var(--shadow);z-index:80;opacity:0;transition:.3s;display:flex;align-items:center;gap:10px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .ck{color:var(--sage)}
+
+/* event detail popover */
+.evmodal .doc{font-family:var(--ui);font-size:15px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;margin-top:6px;font-family:var(--ui);font-size:14.5px}
+.kv .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding-top:2px}
+.kv .v{color:var(--paper)}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">db</div>
+      <div><b>Agency</b><small>Studio</small></div>
+    </div>
+    <div class="navlabel">Workspace</div>
+    <nav class="nav" id="nav">
+      <a class="active" data-view="clients"><span class="ic">◈</span> Clients</a>
+      <a data-view="calendar"><span class="ic">▦</span> Content Calendar</a>
+      <a class="soon"><span class="ic">◷</span> Scheduled Posts <span class="tag-soon">soon</span></a>
+      <a class="soon"><span class="ic">▤</span> Documents <span class="tag-soon">soon</span></a>
+      <a class="soon"><span class="ic">◵</span> Reports <span class="tag-soon">soon</span></a>
+    </nav>
+    <div class="navlabel">Clients</div>
+    <nav class="nav" id="clientNav"></nav>
+    <div class="themebtn" id="themebtn"><span class="ic">◐</span> <span id="themelabel">Theme</span></div>
+  </aside>
+
+  <main class="main" id="main"><div class="loading">Loading your studio…</div></main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="reader" id="reader">
+    <div class="rtop"><div><div class="rk" id="readerKicker">Document</div><b id="readerTitle"></b></div>
+      <div class="close" onclick="closeReader()">✕</div></div>
+    <div class="doc" id="readerBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="ck">✓</span> <span id="toastMsg"></span></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const main = $('#main');
+let CLIENTS = [], CURRENT = null, calObj = null;
+
+/* theme */
+function applyTheme(t){ document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('dbtheme',t); $('#themelabel').textContent = t==='dark'?'Light mode':'Dark mode'; }
+(function(){ const saved=localStorage.getItem('dbtheme');
+  const t = saved || (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'); applyTheme(t); })();
+$('#themebtn').onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+
+async function boot(){
+  try{ CLIENTS = await (await fetch('/api/clients')).json(); }
+  catch{ main.innerHTML='<div class="empty">Could not reach the server. Is it running?</div>'; return; }
+  renderClientNav(); renderClients();
+}
+const initial = n => (n||'?').trim()[0].toUpperCase();
+function logoEl(c,cls){ return c.logo ? `<img class="${cls}" src="${c.logo}" alt="">`
+  : `<div class="${cls}" style="background:linear-gradient(140deg,${c.accent},#00000055)">${initial(c.name)}</div>`; }
+
+function renderClientNav(){
+  $('#clientNav').innerHTML = CLIENTS.map(c =>
+    `<a onclick="openClient('${c.id}')"><span class="ic" style="color:${c.accent}">●</span> ${c.name}</a>`).join('');
+}
+function setNav(view){ document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view)); }
+
+/* ---------- Clients home ---------- */
+function renderClients(){
+  setNav('clients');
+  main.innerHTML = `
+    <div class="topbar">
+      <div><div class="eyebrow">Agency workspace</div>
+        <h1 class="big">Clients</h1>
+        <div class="lead">Every brand's research, calendar and assets — in one calm place.</div></div>
+      <span class="pill"><span class="dot"></span> ${CLIENTS.length} active client${CLIENTS.length!==1?'s':''}</span>
+    </div>
+    <div class="grid">
+      ${CLIENTS.map((c,i)=>`
+        <div class="ccard" style="--acc:${c.accent};--glow:${hexA(c.accent,.14)};animation-delay:${i*90}ms" onclick="openClient('${c.id}')">
+          <div class="accent"></div>
+          <div class="head">${logoEl(c,'clogo')}
+            <div><h3>${c.name}</h3><div class="type">${c.type||''}</div></div></div>
+          <div class="goal">${c.goal||''}</div>
+          <div class="foot">
+            <span>${c.docCount||0} document${c.docCount!==1?'s':''}</span><span class="sep"></span>
+            <span>${c.postCount||0} scheduled post${c.postCount!==1?'s':''}</span>
+            <span class="badge ${c.status}">${c.status}</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+function hexA(hex,a){ const h=hex.replace('#',''); const n=parseInt(h.length===3?h.replace(/(.)/g,'$1$1'):h,16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+
+/* ---------- Client detail ---------- */
+async function openClient(id){
+  setNav(null); CURRENT=id; window.scrollTo(0,0);
+  main.innerHTML='<div class="loading">Opening client…</div>';
+  const c = await (await fetch('/api/client/'+id)).json();
+  const groups={}; c.docs.forEach(d=>{(groups[d.group]=groups[d.group]||[]).push(d);});
+  if(c.products?.length) groups['Products']=c.products;
+  const a=c.assets||{images:[],videos:[],pdfs:[]};
+  main.innerHTML = `
+    <div class="backlink" onclick="renderClients()">← All clients</div>
+    <div class="dhead">${logoEl(c,'clogo')}
+      <div><h1>${c.name}</h1><div class="sub">${c.type||''} ${c.location?'· '+c.location:''}</div></div>
+      <span class="badge ${c.status}" style="margin-left:auto">${c.status}</span></div>
+    ${c.goal?`<div class="goalbar" style="border-color:${c.accent}">${c.goal}</div>`:''}
+    <div class="statrow">
+      <div class="astat click" onclick="showCalendar('${c.id}')"><b>${c.postCount||0}</b><small>Scheduled posts →</small></div>
+      <div class="astat"><b>${c.docs.length}</b><small>Documents</small></div>
+      <div class="astat"><b>${a.videos.length}</b><small>Videos</small></div>
+      <div class="astat"><b>${a.images.length}</b><small>Images</small></div>
+    </div>
+    ${Object.entries(groups).map(([g,items])=>`
+      <div class="section"><div class="grouplabel">${g}</div>
+        <div class="tiles">${items.map(d=>`
+          <div class="tile" onclick="openReader('${d.path}','${(d.label||'').replace(/'/g,'')}','${g}')">
+            <span class="ic">${d.icon||'▪'}</span>
+            <div><b>${d.label}</b><small>Read document</small></div><span class="arr">→</span></div>`).join('')}
+        </div></div>`).join('')}
+    <div class="section"><div class="grouplabel">Videos</div>
+      ${a.videos.length?`<div class="gallery">${a.videos.slice(0,10).map(v=>`<video src="${v.path}" muted controls preload="metadata"></video>`).join('')}</div>`:'<div class="empty">No videos yet.</div>'}</div>
+    <div class="section"><div class="grouplabel">Images</div>
+      ${a.images.length?`<div class="gallery">${a.images.slice(0,15).map(im=>`<img loading="lazy" src="${im.path}" onclick="openImage('${im.path}')">`).join('')}</div>`:'<div class="empty">No images yet.</div>'}</div>`;
+}
+
+/* ---------- Reader ---------- */
+async function openReader(pathUrl,title,kicker){
+  $('#readerKicker').textContent=kicker||'Document'; $('#readerTitle').textContent=title||'';
+  $('#reader').classList.remove('evmodal');
+  $('#readerBody').innerHTML='<div class="loading">Loading…</div>';
+  showOverlay();
+  try{ const md=await (await fetch(pathUrl)).text();
+    $('#readerBody').innerHTML=DOMPurify.sanitize(marked.parse(md,{breaks:true}),{ADD_ATTR:['target']}); $('#reader').scrollTop=0;
+  }catch{ $('#readerBody').innerHTML='<div class="empty">Could not load this document.</div>'; }
+}
+function openImage(src){ $('#readerKicker').textContent='Asset'; $('#readerTitle').textContent='Image';
+  $('#reader').classList.remove('evmodal');
+  $('#readerBody').innerHTML=`<img src="${src}" style="width:100%;border-radius:12px">`; showOverlay(); }
+function showOverlay(){ $('#overlay').classList.add('show'); document.body.style.overflow='hidden'; $('#overlay').scrollTop=0; }
+function closeReader(){ $('#overlay').classList.remove('show'); document.body.style.overflow=''; }
+$('#overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') closeReader(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeReader(); });
+
+/* ---------- Calendar ---------- */
+document.querySelector('[data-view="clients"]').onclick=renderClients;
+document.querySelector('[data-view="calendar"]').onclick=()=>showCalendar(CURRENT||CLIENTS[0]?.id);
+
+async function showCalendar(id){
+  if(!id) return; CURRENT=id; setNav('calendar'); window.scrollTo(0,0);
+  const c = CLIENTS.find(x=>x.id===id)||{name:''};
+  const chips = CLIENTS.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${x.name}</option>`).join('');
+  main.innerHTML = `
+    <div class="topbar"><div><div class="eyebrow">${c.name}</div>
+      <h1 class="big">Content Calendar</h1>
+      <div class="lead">Drag any post to another day to reschedule it — it saves automatically.</div></div>
+      <select id="calClient" class="pill" style="cursor:pointer;appearance:none;padding-right:26px">${chips}</select></div>
+    <div class="calwrap">
+      <div class="callegend">
+        <span class="lg"><i style="background:#e1447f"></i>Instagram</span>
+        <span class="lg"><i style="background:#26c6c9"></i>TikTok</span>
+        <span class="lg"><i style="background:#5a86ff"></i>Facebook</span>
+        <span class="hint">✋ drag to reschedule · click a post for details</span>
+      </div>
+      <div id="cal"></div>
+    </div>`;
+  $('#calClient').onchange = e=> showCalendar(e.target.value);
+
+  const events = await (await fetch('/api/schedule/'+id)).json();
+  const first = events.map(e=>e.start).sort()[0];
+  const calEl = $('#cal');
+  if(calObj){ calObj.destroy(); }
+  calObj = new FullCalendar.Calendar(calEl,{
+    initialView:'dayGridMonth', initialDate:first||undefined, height:'auto',
+    firstDay:1, headerToolbar:{left:'prev,next today',center:'title',right:''},
+    editable:true, eventStartEditable:true, eventDurationEditable:false,
+    dayMaxEvents:4, fixedWeekCount:false,
+    events: events.map(e=>({ id:e.id, title:e.title, start:e.start, color:e.color, extendedProps:e })),
+    eventContent(arg){ const p=arg.event.extendedProps;
+      return {html:`<div class="ev"><span class="pf"></span><span class="pl">${(p.platform||'').slice(0,2)}</span><span class="tt">${escapeHtml(arg.event.title)}</span>${p.moved?'<span class="moved">↔</span>':''}</div>`}; },
+    eventClick(info){ showEventDetail(info.event.extendedProps); },
+    async eventDrop(info){ const d=info.event.start; const date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      try{ await fetch('/api/schedule/'+id,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({eventId:info.event.id,date})});
+        toast(`Moved to ${d.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'})}`);
+      }catch{ info.revert(); toast('Could not save — reverted'); } },
+  });
+  calObj.render();
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+function showEventDetail(p){
+  $('#readerKicker').textContent = p.week || 'Scheduled post';
+  $('#readerTitle').textContent = p.topic || p.title;
+  $('#reader').classList.add('evmodal');
+  $('#readerBody').innerHTML = `
+    <div style="margin-bottom:16px"><span class="chip" style="background:${p.color}">${p.platform}</span>
+      ${p.format?`<span class="chip" style="background:var(--raise);color:var(--paper-dim);margin-left:6px">${escapeHtml(p.format)}</span>`:''}</div>
+    <div class="kv">
+      <div class="k">Date</div><div class="v">${new Date(p.start+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'})}${p.moved?` <em style="color:var(--gold)">· moved from ${p.origDate}</em>`:''}</div>
+      <div class="k">Goal</div><div class="v">${escapeHtml(p.goal)||'—'}</div>
+      ${p.visual?`<div class="k">Visual</div><div class="v">${escapeHtml(p.visual)}</div>`:''}
+      ${p.caption?`<div class="k">Caption</div><div class="v">${escapeHtml(p.caption)}</div>`:''}
+    </div>`;
+  showOverlay();
+}
+
+function toast(msg){ $('#toastMsg').textContent=msg; const t=$('#toast'); t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2600); }
+
+boot();
+</script>
+</body>
+</html>
